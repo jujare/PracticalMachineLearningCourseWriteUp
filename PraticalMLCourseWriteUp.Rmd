@@ -1,0 +1,52 @@
+---
+title: "Pratical Machine Learning - Course Project Writeup"
+author: "Sreekanth Jujare"
+date: "Sunday, May 24, 2015"
+output: html_document
+---
+
+## Step 1: Created cross validation set
+
+The training dataset provided in *pml-training.csv* file was split into two sets: training set and cross-validation set. Training set had 15699 observations (80 %) and cross-validation set had 3923 observations (20 %).
+
+## Step 2: Indentification of predictor variables
+Analysed the dataset and removed the following variables that obviously did not contribute to a prediction.
+
+* first column containing observation number
+* raw_timestamp_part_1
+* raw_timestamp_part_2
+* cvtd_timestamp
+* new_window
+* num_window
+
+Initial trials to build a classifier using 'rpart' method failed as it could not handle the missing values in the observations. Many of the predictor variables in the dataset provided were either empty or had NA in them.
+
+Removed variables of type that neither 'int' nor 'numeric'. So, the training set now had only 21 variables(including 'classe' variable).
+
+Re-trained the classifier using 'rpart' method with default setting and got a very low accuracy of 0.47 on in-sample dataset(i.e. training set).
+
+## Step 3: Training randomforest with k-fold crossvalidation
+
+Tried to train a randomforest classifier using "rf" method of 'train' function with a 3-fold cross validation setting at first. The train function appeared to take a very long time and never finished training a classifier.
+
+Now, I created a seed of 23 using set.seed function to have consistent results.
+
+Used 'randomForest' function (instead of 'train') from randomForest library with a 10-fold cross-validation. 'randomForest' function worked better than expected and finished training a classifier in no time.
+
+Used the trained model to make prediction on in-sample dataset i.e. training set. Calculated confusion matrix on the in-sample predictions which showed that observations were classified correctly with 100 % accuracy. Below is the confusion matrix for the predictions made:
+
+```{r, echo=FALSE}
+load(file="inSampleConfusionMatrix.RData")
+inSample$table
+```
+
+Now, used the trained model to make prediction on an out-of-sample dataset(cross-validation dataset which was set aside earlier). And the prediction accuracy this time was 0.976. Below is the confusion matrix for the predictions made:
+
+```{r, echo=FALSE}
+load(file="outSampleConfusionMatrix.RData")
+outSample$table
+```
+
+As a final effort to increase prediction accuracy on an out-of-sample dataset, I trained randomForest classifier with Leave One Out Cross Validation (LOOCV) which is an extreme case of cross validation. However, it did not seem to impure accuracy any further. The accuracy of my model was sufficient to classify all the observations in the test set correctly so the model did not require any further improvements.
+
+Therefore, the final out of sample accuracy of the trained model is **97.6 %**
